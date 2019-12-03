@@ -1,0 +1,45 @@
+<template>
+<div class="page" data-name="settings">
+  <div class="navbar">
+    <div class="navbar-bg"></div>
+    <div class="navbar-inner sliding">
+      <div class="title">Settings</div>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="list links-list">
+      <ul>
+        <li><a href="#">Akun</a></li>
+        <li><a href="/logout/">Keluar</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+</template>
+<script>
+export default {
+  on: {
+    pageMounted: function(e, page) {
+      console.log('pageMounted', page);
+    },
+    pageInit: function(e, page) {
+      console.log('pageInit', page);
+    },
+    pageBeforeIn: function(e, page) {
+      console.log('pageBeforeIn', page);
+    },
+    pageAfterIn: function(e, page) {
+      console.log('pageAfterIn', page);
+    },
+    pageBeforeOut: function(e, page) {
+      console.log('pageBeforeOut', page);
+    },
+    pageAfterOut: function(e, page) {
+      console.log('pageAfterOut', page);
+    },
+    pageBeforeRemove: function(e, page) {
+      console.log('pageBeforeRemove', page);
+    },
+  }
+};
+</script>

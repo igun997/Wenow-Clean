@@ -1,0 +1,148 @@
+import $$ from 'dom7';
+import Framework7 from 'framework7/framework7.esm.bundle.js';
+import store from 'localforage/dist/localforage.js'
+import storeData from 'local-storage'
+// Import F7 Styles
+import 'framework7/css/framework7.bundle.css';
+
+// Import Icons and App Custom Styles
+import '../css/icons.css';
+import '../css/app.css';
+// Import Cordova APIs
+import cordovaApp from './cordova-app.js';
+// Import Routes
+import routes from './routes.js';
+var storageSession = store.createInstance({
+  name: "session"
+});
+var base_url = "http://localhost/scm/public/api/android/";
+console.log(storageSession);
+var app = new Framework7({
+  root: '#app', // App root element
+  id: 'io.framework7.wenow', // App bundle ID
+  name: 'WENOW', // App name
+  theme: 'auto', // Automatic theme detection
+  // App root data
+  data: function () {
+    return {
+      session: storeData
+    };
+  },
+  // App root methods
+  methods: {
+    helloWorld: function () {
+      app.dialog.alert('Hello World!');
+    },
+  },
+  // App routes
+  routes: routes,
+
+
+  // Input settings
+  input: {
+    scrollIntoViewOnFocus: Framework7.device.cordova && !Framework7.device.electron,
+    scrollIntoViewCentered: Framework7.device.cordova && !Framework7.device.electron,
+  },
+  // Cordova Statusbar settings
+  statusbar: {
+    iosOverlaysWebView: true,
+    androidOverlaysWebView: false,
+  },
+  on: {
+    init: function () {
+      var f7 = this;
+      if (f7.device.cordova) {
+        // Init cordova APIs (see cordova-app.js)
+        cordovaApp.init(f7);
+      }
+    },
+  },
+});
+//Notif
+function notif(data) {
+  console.log(data);
+  var inst = app.notification.create({
+    icon: '<i class="icon demo-icon">W</i>',
+    title: data.title,
+    titleRightText: 'now',
+    subtitle: data.subtitle,
+    text: data.text,
+    closeOnClick: true,
+  })
+  return inst;
+}
+//Cek session
+storageSession.getItem("isLogin",function(e,v){
+  if (v == null) {
+    console.log("Session empty");
+    app.loginScreen.open("#my-login-screen");
+  }
+})
+function onError(xhr, status) {
+  var data = {
+    title:"Perhatian",
+    subtitle:"Server terputus",
+    text:"Periksa kembali isian anda"
+  };
+  notif(data).open();
+  console.log();
+}
+
+// Login Screen Demo
+$$('#my-login-screen .login-button').on('click', function () {
+  var username = $$('#my-login-screen [name="username"]').val();
+  var password = $$('#my-login-screen [name="password"]').val();
+  // app.loginScreen.close('#my-login-screen');
+  var compact = {email:username,password:password};
+  app.request.post(base_url+"login",compact,function(d, status, xhr){
+    console.log("ajax");
+    console.log(d);
+    if (d.status == 1) {
+      storageSession.setItem("isLogin",true);
+      storeData.set("data",d.data);
+      var data = {
+        title:"Yeaay !",
+        subtitle:"Login Berhasil",
+        text:"Silahkan menikmati fasilitas kami"
+      };
+      notif(data).open();
+      app.loginScreen.close("#my-login-screen");
+    }else {
+      var data = {
+        title:"Perhatian",
+        subtitle:"Login Gagal",
+        text:"Tolong periksa username dan password anda"
+      };
+      notif(data).open();
+    }
+  },onError,"json");
+});
+$$('#my-login-screen .register-button').on('click', function () {
+  app.loginScreen.close("#my-login-screen");
+  app.loginScreen.open("#my-register-screen");
+});
+$$('#my-register-screen .login-button').on('click', function () {
+  app.loginScreen.close("#my-register-screen");
+  app.loginScreen.open("#my-login-screen");
+});
+$$("#my-register-screen .simpan-button").on("click",function(){
+  var data = {};
+  data.nama = $$('#my-register-screen [name="nama"]').val();
+  data.email = $$('#my-register-screen [name="email"]').val();
+  data.password = $$('#my-register-screen [name="password"]').val();
+  data.jk = $$('#my-register-screen [name="jk"]').val();
+  data.alamat = $$('#my-register-screen [name="alamat"]').val();
+  data.no_hp = $$('#my-register-screen [name="no_hp"]').val();
+  app.request.post(base_url+"register",data,function(d, status, xhr){
+    if (d.status == 1) {
+      var ds = {
+        title:"Perhatian",
+        subtitle:"Pendaftaran Sukses",
+        text:"Silahkan cek email untuk aktivasi akun"
+      }
+      notif(ds).open();
+      app.loginScreen.close("#my-register-screen");
+      app.loginScreen.open("#my-login-screen");
+    }
+  },onError(),"json");
+});
