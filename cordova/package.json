@@ -15,7 +15,6 @@
   "dependencies": {
     "cordova-android": "^8.1.0",
     "cordova-ios": "^5.1.1",
-    "cordova-plugin-googlemaps": "^2.6.2",
     "cordova-plugin-keyboard": "^1.2.0",
     "cordova-plugin-splashscreen": "^5.0.3",
     "cordova-plugin-statusbar": "^2.4.3",
@@ -28,13 +27,7 @@
       "cordova-plugin-keyboard": {},
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-wkwebview-file-xhr": {},
-      "cordova-plugin-whitelist": {},
-      "cordova-plugin-googlemaps": {
-        "PLAY_SERVICES_VERSION": "15.0.1",
-        "ANDROID_SUPPORT_V4_VERSION": "27.+",
-        "LOCATION_WHEN_IN_USE_DESCRIPTION": "This app wants to get your location while this app runs only.",
-        "LOCATION_ALWAYS_USAGE_DESCRIPTION": "This app wants to get your location always, even this app runs in background."
-      }
+      "cordova-plugin-whitelist": {}
     },
     "platforms": [
       "ios",
