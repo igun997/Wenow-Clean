@@ -8,10 +8,8 @@
     </div>
     <div class="page-content">
       <div class="list links-list">
-        <ul>
-          {{#each products}}
-            <li><a href="/product/{{id}}/">{{title}}</a></li>
-          {{/each}}
+        <ul id="list">
+
         </ul>
       </div>
     </div>
@@ -19,10 +17,37 @@
 </template>
 <script>
   export default {
-    data: function () {
-      return {
-        products: this.$root.products,
-      };
+    on:{
+      pageMounted:function(){
+        var $$ = this.$root.obj;
+        var base_url = this.$root.url;
+        var app = this.$app;
+        var sess = this.$root.session;
+        var d = sess.get("data");
+        app.request.get(base_url+"listpesanan/"+d.id,function(d){
+          if (d.status == 1) {
+            $$("#list").html("")
+            d.data.forEach(function(el,i){
+              $$("#list").append('<li><a href="/pesanan/'+el.id_unformat+'/">#'+el.id+' '+el.nama_layanan+'</a></li>');
+            });
+          }else {
+            var data = {
+              title:"Perhatian",
+              subtitle:"Tidak ada pesanan",
+              text:"Sepertinya kamu belum pesanan apapun"
+            }
+            var inst = app.notification.create({
+              icon: '<i class="icon demo-icon">W</i>',
+              title: data.title,
+              titleRightText: 'now',
+              subtitle: data.subtitle,
+              text: data.text,
+              closeOnClick: true,
+            });
+            inst.open();
+          }
+        },"json");
+      }
     }
   };
 </script>

@@ -26,23 +26,23 @@
 </head>
 <body>
   <div id="app">
-    
+
     <!-- Views/Tabs container -->
     <div class="views tabs safe-areas">
       <!-- Tabbar for switching views-tabs -->
       <div class="toolbar toolbar-bottom tabbar-labels">
         <div class="toolbar-inner">
-          <a href="#view-home" class="tab-link tab-link-active">
+          <a href="#view-home" id="tab_home" class="tab-link tab-link-active">
             <i class="icon f7-icons if-not-md">house_fill</i>
             <i class="icon material-icons if-md">home</i>
             <span class="tabbar-label">Home</span>
           </a>
-          <a href="#view-pesanan" class="tab-link">
+          <a href="#view-pesanan" id="tab_pesanan" class="tab-link">
             <i class="icon f7-icons if-not-md">square_list_fill</i>
             <i class="icon material-icons if-md">view_list</i>
             <span class="tabbar-label">Pesanan</span>
           </a>
-          <a href="#view-settings" class="tab-link">
+          <a href="#view-settings" id="tab_settings" class="tab-link">
             <i class="icon f7-icons if-not-md">gear</i>
             <i class="icon material-icons if-md">settings</i>
             <span class="tabbar-label">Settings</span>
@@ -51,18 +51,14 @@
       </div>
 
       <!-- Your main view/tab, should have "view-main" class. It also has "tab-active" class -->
-      <div id="view-home" class="view view-main view-init tab tab-active" data-url="/">
-        <!-- Home page will be loaded here dynamically from / route -->
+      <div id="view-home" class="view view-main view-init" data-url="/">
+
       </div>
 
-      <!-- Catalog View -->
-      <div id="view-pesanan" class="view view-init tab" data-view="pesanan" data-url="/pesanan/">
-        <!-- Catalog page will be loaded here dynamically from /catalog/ route -->
-      </div>
 
       <!-- Settings View -->
       <div id="view-settings" class="view view-init tab" data-view="settings" data-url="/settings/">
-        <!-- Settings page will be loaded here dynamically from /settings/ route -->
+
       </div>
     </div>
 

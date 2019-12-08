@@ -1,7 +1,8 @@
 import $$ from 'dom7';
 import Framework7 from 'framework7/framework7.esm.bundle.js';
-import store from 'localforage/dist/localforage.js'
-import storeData from 'local-storage'
+import store from 'localforage/dist/localforage.js';
+import storeData from 'local-storage';
+import geo from 'geolocation';
 // Import F7 Styles
 import 'framework7/css/framework7.bundle.css';
 
@@ -15,7 +16,7 @@ import routes from './routes.js';
 var storageSession = store.createInstance({
   name: "session"
 });
-var base_url = "http://localhost/scm/public/api/android/";
+var base_url = "http://192.168.1.8/scm/public/api/android/";
 console.log(storageSession);
 var app = new Framework7({
   root: '#app', // App root element
@@ -25,14 +26,17 @@ var app = new Framework7({
   // App root data
   data: function () {
     return {
-      session: storeData
+      session: storeData,
+      obj:$$,
+      url:base_url,
+      loc:geo
     };
   },
   // App root methods
   methods: {
     helloWorld: function () {
       app.dialog.alert('Hello World!');
-    },
+    }
   },
   // App routes
   routes: routes,
@@ -87,8 +91,21 @@ function onError(xhr, status) {
   notif(data).open();
   console.log();
 }
-
+console.log("Initial");
+console.log($$);
 // Login Screen Demo
+$$("#tab_pesanan").on("click", function(event) {
+  console.log("ClickIt");
+  app.views.main.router.navigate("/pesanan/");
+})
+$$("#tab_home").on("click", function(event) {
+  console.log("ClickIt");
+  app.views.main.router.navigate("/");
+})
+$$("#tab_settings").on("click", function(event) {
+  console.log("ClickIt");
+  app.views.main.router.navigate("/settings/");
+})
 $$('#my-login-screen .login-button').on('click', function () {
   var username = $$('#my-login-screen [name="username"]').val();
   var password = $$('#my-login-screen [name="password"]').val();
@@ -107,6 +124,7 @@ $$('#my-login-screen .login-button').on('click', function () {
       };
       notif(data).open();
       app.loginScreen.close("#my-login-screen");
+      app.views.main.router.navigate("/");
     }else {
       var data = {
         title:"Perhatian",
@@ -146,3 +164,4 @@ $$("#my-register-screen .simpan-button").on("click",function(){
     }
   },onError(),"json");
 });
+//order

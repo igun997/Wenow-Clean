@@ -3,11 +3,12 @@ import HomePage from '../pages/home.f7.html';
 import AboutPage from '../pages/about.f7.html';
 import FormPage from '../pages/form.f7.html';
 import PesananPage from '../pages/pesanan.f7.html';
-import ProductPage from '../pages/product.f7.html';
+import PesananDetail from '../pages/pesanan_detail.f7.html';
 import SettingsPage from '../pages/settings.f7.html';
 import store from 'localforage/dist/localforage.js'
 import DynamicRoutePage from '../pages/dynamic-route.f7.html';
 import RequestAndLoad from '../pages/request-and-load.f7.html';
+import LayananPage from '../pages/layanan.f7.html';
 import NotFoundPage from '../pages/404.f7.html';
 
 var routes = [
@@ -16,8 +17,8 @@ var routes = [
     component: HomePage,
   },
   {
-    path: '/about/',
-    component: AboutPage,
+    path: '/layanan/',
+    component: LayananPage,
   },
   {
     path: '/form/',
@@ -28,8 +29,50 @@ var routes = [
     component: PesananPage,
   },
   {
-    path: '/product/:id/',
-    component: ProductPage,
+    path: '/pesanan/:id/',
+    async: function (routeTo, routeFrom, resolve, reject) {
+        var router = this;
+        var app = router.app;
+        var url = app.data.url;
+        // app.preloader.show();
+        console.log(url);
+        app.request({
+          url: url+"pesanan",
+          async:false,
+          statusCode: {
+            404: function (xhr) {
+              alert('page not found');
+            }
+          },
+          success:function(d){
+            // console.log(d);
+            // app.preloader.close();
+            var pos ;
+
+            resolve({
+                  component: PesananDetail,
+                },{
+                  context: {
+                    pesanan:d,
+                    loc:pos
+                  }
+                });
+          },
+          always:function(){
+
+          }
+        });
+        // app.request.get(url+"pesanan",function(d){
+        //   app.preloader.close();
+        //   resolve({
+        //       component: PesananDetail,
+        //     },{
+        //       context: {
+        //         pesanan:d.data
+        //       }
+        //     });
+        // },"json");
+    }
   },
   {
     path: '/settings/',

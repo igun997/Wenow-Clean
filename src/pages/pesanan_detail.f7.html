@@ -1,0 +1,159 @@
+<template>
+  <div class="page" data-name="pesanan_detail">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">Rincian Pesanan</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block-title" style="padding:2px 2px 2px">Progress Pesanan</div>
+      <div class="block block-strong">
+        <div class="row">
+          <div class="col text-align-center">
+            <div
+              class="gauge gauge-init"
+              data-type="semicircle"
+              data-value="{{persentator_comma}}"
+              data-value-text="{{persentator}}%"
+              data-value-text-color="#f44336"
+              data-border-color="#f44336"
+            ></div>
+          </div>
+        </div>
+      </div>
+      <div class="block-title" style="padding:2px 2px 2px">Rincian</div>
+      <div class="block block-strong">
+        <div class="row">
+          <div class="col">
+            <label class="flex-shrink-0"><b>Status Pesanan</b></label>
+            <p>{{pesanan.order}}</p>
+          </div>
+          <div class="col">
+            <label class="flex-shrink-0"><b>No Order</b></label>
+            <p>#{{pesanan.id_formatted}}</p>
+          </div>
+          <div class="col">
+            <label class="flex-shrink-0"><b>Item Dipesan</b></label>
+            <p>{{pesanan.gerai_layanan.nama}} x{{pesanan.qty}}</p>
+          </div>
+        </div>
+        <p>{{loc}}</p>
+        <div class="row">
+          {{#if dec }}
+          <div class="col-100">
+            <center>
+              <div class="block-title" style="padding:2px 2px 2px">Opsi Pengantaran</div>
+            </center>
+          </div>
+            <div class="col">
+               <button class="col button button-large button-fill koreksi" data-id="1" data-primary="{{pesanan.id}}">Diantar Kurir</button>
+            </div>
+            <div class="col">
+               <button class="col button button-large button-fill koreksi" data-id="0" data-primary="{{pesanan.id}}">Jemput Sendiri</button>
+            </div>
+          {{/if}}
+          {{#if pesanan.gerai_driver_id }}
+            <div class="col">
+              <label class="flex-shrink-0"><b>Nama Pengemudi</b></label>
+              <p>{{pesanan.gerai_driver.nama}}</p>
+            </div>
+            <div class="col">
+              <label class="flex-shrink-0"><b>Total Tempuh</b></label>
+              <p>{{pesanan.jarak}} KM</p>
+            </div>
+            <div class="col">
+              <label class="flex-shrink-0"><b>Total Harga</b></label>
+              <p>Rp. {{total}}</p>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  export default {
+    data: function () {
+      console.log("Control");
+      var rowData = JSON.parse(this.pesanan);
+      console.log(rowData);
+      var id = this.$route.params.id;
+      var selected;
+      rowData.data.forEach(function(e){
+        if (e.id == id) {
+          selected = e;
+          return false;
+        }
+      });
+      var s = false;
+      if(selected.status_order == 4){
+        s = true;
+      }
+      return {
+        pesanan:selected,
+        persentator:((selected.status_order*100)/6).toFixed(),
+        persentator_comma:(selected.status_order/6),
+        total:(selected.qty*selected.gerai_layanan.harga)+(selected.jarak*5000),
+        dec:s
+      };
+    },
+    on:{
+      pageAfterIn:function(){
+        var $$ = this.$root.obj;
+        var url = this.$root.url;
+        var app = this.$app;
+        console.log("AfterIN Control");
+        console.log(url);
+        $$(".koreksi").on("click", function(event) {
+          var status = $$(this).data("id");
+          var id = $$(this).data("primary");
+          console.log(status);
+          console.log(id);
+          console.log("Klik");
+          app.request.get(url+"dijemput/"+status+"/"+id,function(d){
+            if (d.status == 1) {
+              var data = {
+                title:"Perhatian",
+                subtitle:"Sukses Simpan Data",
+                text:"Tunggu Sebentar Driver Akan Menghubungi Anda"
+              };
+              var inst = app.notification.create({
+                icon: '<i class="icon demo-icon">W</i>',
+                title: data.title,
+                titleRightText: 'now',
+                subtitle: data.subtitle,
+                text: data.text,
+                closeOnClick: true,
+              });
+              inst.open();
+              app.views.main.router.navigate("/pesanan/");
+            }else {
+              var data = {
+                title:"Perhatian",
+                subtitle:"Error Di Temukan",
+                text:"Order Tidak Ditemukan"
+              };
+              var inst = app.notification.create({
+                icon: '<i class="icon demo-icon">W</i>',
+                title: data.title,
+                titleRightText: 'now',
+                subtitle: data.subtitle,
+                text: data.text,
+                closeOnClick: true,
+              });
+              inst.open();
+
+            }
+          },"json");
+        })
+      }
+    }
+  };
+</script>

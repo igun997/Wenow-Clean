@@ -1,0 +1,185 @@
+<template>
+<div class="page" data-name="layanan">
+  <div class="navbar">
+    <div class="navbar-bg"></div>
+    <div class="navbar-inner sliding">
+      <div class="left">
+        <a href="#" class="link back">
+          <i class="icon icon-back"></i>
+          <span class="if-not-md">Back</span>
+        </a>
+      </div>
+      <div class="title">Form Order</div>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="block">
+      <form class="list" id="my-form">
+        <ul>
+          <li>
+            <a class="item-link smart-select smart-select-init">
+              <select name="pemilik_id" id="pemilik_id">
+
+              </select>
+              <div class="item-content">
+                <div class="item-inner">
+                  <div class="item-title">Pilih Gerai</div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="item-link smart-select smart-select-init">
+              <select name="gerai_layanan_id" id="gerai_layanan_id">
+
+              </select>
+              <div class="item-content">
+                <div class="item-inner">
+                  <div class="item-title">Pilih Layanan</div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li>
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">Jumlah</div>
+              <div class="item-input-wrap">
+                <input type="number" name="qty">
+              </div>
+            </div>
+          </div>
+        </li>
+        </ul>
+      </form>
+    </div>
+    <div class="block block-strong row">
+      <div class="col"><a class="button button-fill convert-form-to-data" href="#">Order Sekarang</a></div>
+    </div>
+  </div>
+</div>
+</template>
+<script>
+export default {
+  data: function () {
+    var $$ = this.$root.obj;
+    var base_url = this.$root.url;
+    var app = this.$app;
+    this.$app.request.get(base_url+"penggunalist",function(d){
+      if (d.status == 1) {
+        var fdata = [];
+        d.data.forEach(function(el,i){
+          fdata.push(el);
+        });
+        var carsSelect = $$("#pemilik_id");
+        carsSelect.html("");
+        fdata.forEach(function(el) {
+          carsSelect.append("<option value=" + el.id_pengguna + ">" + el.nama_pengguna + "</option>");
+        });
+
+      }else {
+        this.onError();
+      }
+    },"json");
+  },
+  on: {
+    pageInit: function(e, page) {
+      var $$ = this.$root.obj;
+      var base_url = this.$root.url;
+      var app = this.$app;
+      var sess = this.$root.session;
+      var datasesi = sess.get("data");
+      var select = app.smartSelect.create({
+        el:".smart-select",
+        on: {
+          close: function () {
+            console.log("ID");
+            var id = $$("#pemilik_id").val();
+            console.log(id);
+            app.request.get(base_url+"layananlist/"+id,function(d){
+              if (d.status == 1) {
+                var fdata = [];
+                d.data.forEach(function(el,i){
+                  fdata.push(el);
+                });
+                var carsSelect = $$("#gerai_layanan_id");
+                carsSelect.html("");
+                fdata.forEach(function(el) {
+                  carsSelect.append("<option value=" + el.id + ">" + el.nama + " - " +"Rp."+el.harga+ "</option>");
+                });
+
+              }else {
+                this.onError();
+              }
+            },"json");
+          }
+        }
+      });
+      $$('.convert-form-to-data').on('click', function(){
+        var formData = app.form.convertToData('#my-form');
+        formData.gerai_pelanggan_id = datasesi.id;
+        console.log(formData);
+        app.request.get(base_url+"cekharga/"+formData.gerai_layanan_id,function(d){
+          app.dialog.confirm('Estimasi Pembayaran Rp. '+(parseFloat(formData.qty) * parseFloat(d)), function () {
+            app.request.post(base_url+"submitorder",formData,function(d){
+              if (d.status == 1) {
+                var data = {
+                  title:"Sukses Order",
+                  subtitle:"Order Telah Dikirim",
+                  text:"Harap tunggu driver akan menjemput sepatumu"
+                }
+                var inst = app.notification.create({
+                  icon: '<i class="icon demo-icon">W</i>',
+                  title: data.title,
+                  titleRightText: 'now',
+                  subtitle: data.subtitle,
+                  text: data.text,
+                  closeOnClick: true,
+                });
+                inst.open();
+                app.views.main.router.navigate("/pesanan/");
+              }else {
+                var data = {
+                  title:"Perhatian",
+                  subtitle:"Error Di Temukan",
+                  text:"Harap Tunggu Sampai Orderan Sebelumnya Selesai"
+                };
+                var inst = app.notification.create({
+                  icon: '<i class="icon demo-icon">W</i>',
+                  title: data.title,
+                  titleRightText: 'now',
+                  subtitle: data.subtitle,
+                  text: data.text,
+                  closeOnClick: true,
+                });
+                inst.open();
+
+              }
+            },"json");
+          });
+        },"text")
+      });
+    }
+  },methods: {
+    notif:function(data) {
+        var self = this;
+        var inst = self.$app.notification.create({
+          icon: '<i class="icon demo-icon">W</i>',
+          title: data.title,
+          titleRightText: 'now',
+          subtitle: data.subtitle,
+          text: data.text,
+          closeOnClick: true,
+        });
+        return inst;
+    },onError:function(){
+      var data = {
+        title:"Perhatian",
+        subtitle:"Error Di Temukan",
+        text:"Kamu terputus dengan sever"
+      };
+      this.notif(data).open();
+    }
+  }
+};
+</script>
