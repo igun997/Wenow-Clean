@@ -44,7 +44,6 @@
             <p>{{pesanan.gerai_layanan.nama}} x{{pesanan.qty}}</p>
           </div>
         </div>
-        <p>{{loc}}</p>
         <div class="row">
           {{#if dec }}
           <div class="col-100">
@@ -59,6 +58,9 @@
                <button class="col button button-large button-fill koreksi" data-id="0" data-primary="{{pesanan.id}}">Jemput Sendiri</button>
             </div>
           {{/if}}
+        </div>
+        <div class="row">
+
           {{#if pesanan.gerai_driver_id }}
             <div class="col">
               <label class="flex-shrink-0"><b>Nama Pengemudi</b></label>
@@ -79,6 +81,7 @@
   </div>
 </template>
 <script>
+
   export default {
     data: function () {
       console.log("Control");
@@ -106,9 +109,13 @@
     },
     on:{
       pageAfterIn:function(){
+
         var $$ = this.$root.obj;
         var url = this.$root.url;
         var app = this.$app;
+        var sess = this.$root.session;
+        var datasesi = sess.get('data');
+        console.log(sess.get('data'));
         console.log("AfterIN Control");
         console.log(url);
         $$(".koreksi").on("click", function(event) {
@@ -117,41 +124,91 @@
           console.log(status);
           console.log(id);
           console.log("Klik");
-          app.request.get(url+"dijemput/"+status+"/"+id,function(d){
-            if (d.status == 1) {
-              var data = {
-                title:"Perhatian",
-                subtitle:"Sukses Simpan Data",
-                text:"Tunggu Sebentar Driver Akan Menghubungi Anda"
-              };
-              var inst = app.notification.create({
-                icon: '<i class="icon demo-icon">W</i>',
-                title: data.title,
-                titleRightText: 'now',
-                subtitle: data.subtitle,
-                text: data.text,
-                closeOnClick: true,
-              });
-              inst.open();
-              app.views.main.router.navigate("/pesanan/");
-            }else {
-              var data = {
-                title:"Perhatian",
-                subtitle:"Error Di Temukan",
-                text:"Order Tidak Ditemukan"
-              };
-              var inst = app.notification.create({
-                icon: '<i class="icon demo-icon">W</i>',
-                title: data.title,
-                titleRightText: 'now',
-                subtitle: data.subtitle,
-                text: data.text,
-                closeOnClick: true,
-              });
-              inst.open();
+          console.log("Lokasi");
+          var urlBonds = function(add){
+            return "https://maps.googleapis.com/maps/api/geocode/json?address="+add+"&key=AIzaSyD1cM44pjtWnEej7CgCeCVtYx5D70ImTdQ";
+          };
+          if (status == 1) {
+            var getLatLng = urlBonds(datasesi.alamat);
+            app.request.get(getLatLng,function(ds,s,x){
+              var res = ds.results;
+              var lat = res[0].geometry.location.lat
+              var lng = res[0].geometry.location.lng
+              app.request.get(url+"dijemput/"+status+"/"+id+"?lat="+lat+"&lng="+lng,function(d){
+                if (d.status == 1) {
+                  var data = {
+                    title:"Perhatian",
+                    subtitle:"Sukses Simpan Data",
+                    text:"Tunggu Sebentar Driver Akan Menghubungi Anda"
+                  };
+                  var inst = app.notification.create({
+                    icon: '<i class="icon demo-icon">W</i>',
+                    title: data.title,
+                    titleRightText: 'now',
+                    subtitle: data.subtitle,
+                    text: data.text,
+                    closeOnClick: true,
+                  });
+                  inst.open();
+                  app.views.main.router.navigate("/pesanan/");
+                }else {
+                  var data = {
+                    title:"Perhatian",
+                    subtitle:"Error Di Temukan",
+                    text:"Order Tidak Ditemukan"
+                  };
+                  var inst = app.notification.create({
+                    icon: '<i class="icon demo-icon">W</i>',
+                    title: data.title,
+                    titleRightText: 'now',
+                    subtitle: data.subtitle,
+                    text: data.text,
+                    closeOnClick: true,
+                  });
+                  inst.open();
 
-            }
-          },"json");
+                }
+              },"json");
+            },"json");
+          }else {
+
+            app.request.get(url+"dijemput/"+status+"/"+id,function(d){
+              if (d.status == 1) {
+                var data = {
+                  title:"Perhatian",
+                  subtitle:"Sukses Simpan Data",
+                  text:"Silahkan Jemput Di Lokasi"
+                };
+                var inst = app.notification.create({
+                  icon: '<i class="icon demo-icon">W</i>',
+                  title: data.title,
+                  titleRightText: 'now',
+                  subtitle: data.subtitle,
+                  text: data.text,
+                  closeOnClick: true,
+                });
+                inst.open();
+                app.views.main.router.navigate("/pesanan/");
+              }else {
+                var data = {
+                  title:"Perhatian",
+                  subtitle:"Error Di Temukan",
+                  text:"Order Tidak Ditemukan"
+                };
+                var inst = app.notification.create({
+                  icon: '<i class="icon demo-icon">W</i>',
+                  title: data.title,
+                  titleRightText: 'now',
+                  subtitle: data.subtitle,
+                  text: data.text,
+                  closeOnClick: true,
+                });
+                inst.open();
+
+              }
+            },"json");
+          }
+
         })
       }
     }

@@ -1,20 +1,32 @@
 
 import HomePage from '../pages/home.f7.html';
-import AboutPage from '../pages/about.f7.html';
 import FormPage from '../pages/form.f7.html';
 import PesananPage from '../pages/pesanan.f7.html';
 import PesananDetail from '../pages/pesanan_detail.f7.html';
 import SettingsPage from '../pages/settings.f7.html';
 import store from 'localforage/dist/localforage.js'
-import DynamicRoutePage from '../pages/dynamic-route.f7.html';
-import RequestAndLoad from '../pages/request-and-load.f7.html';
 import LayananPage from '../pages/layanan.f7.html';
 import NotFoundPage from '../pages/404.f7.html';
+import geolocation from "geolocation";
 
 var routes = [
   {
     path: '/',
-    component: HomePage,
+    async: function (routeTo, routeFrom, resolve, reject) {
+      var router = this;
+      var app = router.app;
+      var url = app.data.url;
+      app.preloader.show();
+
+      app.preloader.hide();
+      resolve({
+        component: HomePage,
+      },{
+        context: {
+          lokasi:null,
+        }
+      });
+    }
   },
   {
     path: '/layanan/',
@@ -26,7 +38,37 @@ var routes = [
   },
   {
     path: '/pesanan/',
-    component: PesananPage,
+    async: function (routeTo, routeFrom, resolve, reject) {
+        var router = this;
+        var app = router.app;
+        var url = app.data.url;
+        var sess = app.data.session;
+        var d = sess.get("data");
+        app.preloader.show();
+        app.request({
+          url: url+"listpesanan/"+d.id,
+          async:false,
+          statusCode: {
+            404: function (xhr) {
+              alert('page not found');
+            }
+          },
+          success:function(d){
+            var pos ;
+            app.preloader.hide();
+            resolve({
+                  component: PesananPage,
+                },{
+                  context: {
+                    pesanan:d
+                  }
+                });
+          },
+          always:function(){
+
+          }
+        });
+    }
   },
   {
     path: '/pesanan/:id/',
@@ -34,7 +76,7 @@ var routes = [
         var router = this;
         var app = router.app;
         var url = app.data.url;
-        // app.preloader.show();
+        app.preloader.show();
         console.log(url);
         app.request({
           url: url+"pesanan",
@@ -45,10 +87,9 @@ var routes = [
             }
           },
           success:function(d){
-            // console.log(d);
-            // app.preloader.close();
             var pos ;
 
+            app.preloader.hide();
             resolve({
                   component: PesananDetail,
                 },{
@@ -62,16 +103,6 @@ var routes = [
 
           }
         });
-        // app.request.get(url+"pesanan",function(d){
-        //   app.preloader.close();
-        //   resolve({
-        //       component: PesananDetail,
-        //     },{
-        //       context: {
-        //         pesanan:d.data
-        //       }
-        //     });
-        // },"json");
     }
   },
   {
@@ -81,66 +112,16 @@ var routes = [
     path:"/logout/",
     async:function(){
       store.removeItem("isLogin");
-    }
-  },
-  {
-    path: '/dynamic-route/blog/:blogId/post/:postId/',
-    component: DynamicRoutePage,
-  },
-  {
-    path: '/request-and-load/user/:userId/',
-    async: function (routeTo, routeFrom, resolve, reject) {
-      // Router instance
       var router = this;
-
-      // App instance
       var app = router.app;
+      var url = app.data.url;
+      var ses = app.data.sesi;
+      ses.removeItem("isLogin");
+      app.views.main.router.navigate("/");
+      app.loginScreen.open("#my-login-screen");
+    }
+  }
 
-      // Show Preloader
-      app.preloader.show();
-
-      // User ID from request
-      var userId = routeTo.params.userId;
-
-      // Simulate Ajax Request
-      setTimeout(function () {
-        // We got user data from request
-        var user = {
-          firstName: 'Vladimir',
-          lastName: 'Kharlampidi',
-          about: 'Hello, i am creator of Framework7! Hope you like it!',
-          links: [
-            {
-              title: 'Framework7 Website',
-              url: 'http://framework7.io',
-            },
-            {
-              title: 'Framework7 Forum',
-              url: 'http://forum.framework7.io',
-            },
-          ]
-        };
-        // Hide Preloader
-        app.preloader.hide();
-
-        // Resolve route to load page
-        resolve(
-          {
-            component: RequestAndLoad,
-          },
-          {
-            context: {
-              user: user,
-            }
-          }
-        );
-      }, 1000);
-    },
-  },
-  {
-    path: '(.*)',
-    component: NotFoundPage,
-  },
 ];
 
 export default routes;

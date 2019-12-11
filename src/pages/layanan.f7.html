@@ -119,45 +119,53 @@ export default {
         var formData = app.form.convertToData('#my-form');
         formData.gerai_pelanggan_id = datasesi.id;
         console.log(formData);
-        app.request.get(base_url+"cekharga/"+formData.gerai_layanan_id,function(d){
-          app.dialog.confirm('Estimasi Pembayaran Rp. '+(parseFloat(formData.qty) * parseFloat(d)), function () {
-            app.request.post(base_url+"submitorder",formData,function(d){
-              if (d.status == 1) {
-                var data = {
-                  title:"Sukses Order",
-                  subtitle:"Order Telah Dikirim",
-                  text:"Harap tunggu driver akan menjemput sepatumu"
-                }
-                var inst = app.notification.create({
-                  icon: '<i class="icon demo-icon">W</i>',
-                  title: data.title,
-                  titleRightText: 'now',
-                  subtitle: data.subtitle,
-                  text: data.text,
-                  closeOnClick: true,
-                });
-                inst.open();
-                app.views.main.router.navigate("/pesanan/");
-              }else {
-                var data = {
-                  title:"Perhatian",
-                  subtitle:"Error Di Temukan",
-                  text:"Harap Tunggu Sampai Orderan Sebelumnya Selesai"
-                };
-                var inst = app.notification.create({
-                  icon: '<i class="icon demo-icon">W</i>',
-                  title: data.title,
-                  titleRightText: 'now',
-                  subtitle: data.subtitle,
-                  text: data.text,
-                  closeOnClick: true,
-                });
-                inst.open();
+        var urlBonds = function(add){
+          return "https://maps.googleapis.com/maps/api/geocode/json?address="+add+"&key=AIzaSyD1cM44pjtWnEej7CgCeCVtYx5D70ImTdQ";
+        };
+        app.request.get(urlBonds(datasesi.alamat),function(dr){
+          var res = dr.results;
+          var lat = res[0].geometry.location.lat;
+          var lng = res[0].geometry.location.lng;
+          app.request.get(base_url+"cekharga/"+formData.gerai_layanan_id,function(d){
+            app.dialog.confirm('Estimasi Pembayaran Rp. '+(parseFloat(formData.qty) * parseFloat(d)), function () {
+              app.request.post(base_url+"submitorder?cLat="+lat+"&cLng="+lng,formData,function(d){
+                if (d.status == 1) {
+                  var data = {
+                    title:"Sukses Order",
+                    subtitle:"Order Telah Dikirim",
+                    text:"Harap tunggu driver akan menjemput sepatumu"
+                  }
+                  var inst = app.notification.create({
+                    icon: '<i class="icon demo-icon">W</i>',
+                    title: data.title,
+                    titleRightText: 'now',
+                    subtitle: data.subtitle,
+                    text: data.text,
+                    closeOnClick: true,
+                  });
+                  inst.open();
+                  app.views.main.router.navigate("/pesanan/");
+                }else {
+                  var data = {
+                    title:"Perhatian",
+                    subtitle:"Error Di Temukan",
+                    text:"Harap Tunggu Sampai Orderan Sebelumnya Selesai"
+                  };
+                  var inst = app.notification.create({
+                    icon: '<i class="icon demo-icon">W</i>',
+                    title: data.title,
+                    titleRightText: 'now',
+                    subtitle: data.subtitle,
+                    text: data.text,
+                    closeOnClick: true,
+                  });
+                  inst.open();
 
-              }
-            },"json");
-          });
-        },"text")
+                }
+              },"json");
+            });
+          },"text")
+        },"json");
       });
     }
   },methods: {
