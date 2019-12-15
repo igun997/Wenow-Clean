@@ -20,7 +20,7 @@ var storageSession = store.createInstance({
   name: "session"
 });
 
-var base_url = "http://localhost/scm/public/api/android/";
+var base_url = "http://wenow.id/api/android/";
 console.log(storageSession);
 var app = new Framework7({
   root: '#app', // App root element
@@ -187,9 +187,4 @@ $$("#my-register-screen .simpan-button").on("click",function(){
     }
   },"json");
 
-});
-//order
-document.addEventListener('deviceready', () => {
-  alert('Device ready event fired!');
-   alert(cordova.plugins); // Undefined
 });
