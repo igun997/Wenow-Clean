@@ -1,0 +1,52 @@
+<template>
+<div class="page" data-name="help">
+  <div class="navbar">
+    <div class="navbar-bg"></div>
+    <div class="navbar-inner sliding">
+      <div class="title">Bantuan</div>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="list accordion-list">
+      <ul>
+        {{#each data.data}}
+        <li class="accordion-item"><a href="#" class="item-content item-link">
+            <div class="item-inner">
+              <div class="item-title">{{nama_pengguna}}</div>
+            </div></a>
+          <div class="accordion-item-content">
+            <div class="block">
+              <div class="row">
+                <div class="col">
+                  <label class="flex-shrink-0"><b>No Telepon</b></label>
+                  <p>{{no_kontak}}</p>
+                </div>
+                <div class="col">
+                  <label class="flex-shrink-0"><b>Alamat</b></label>
+                  <p>{{alamat}}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <img src="https://api.mapbox.com/v4/mapbox.emerald/pin-s-circle+285A98({{lng}},{{lat}})/{{lng}},{{lat}},18/600x300@2x.png?access_token=pk.eyJ1IjoiaWd1bjk5NyIsImEiOiJjazRkNGU2MGEwdHB4M2xwYTU0YWpsd2V4In0.DsoDIY5kzULdad_WuJVyRg" style="width:100%;height:50%" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+</div>
+</template>
+<script>
+export default {
+  data : function(){
+    var rowData = JSON.parse(this.pengguna);
+    return {
+      data:rowData
+    }
+  }
+};
+</script>

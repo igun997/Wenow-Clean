@@ -17,6 +17,9 @@
       <form class="list" id="my-form">
         <ul>
           <li>
+            <p style='color:red'>* Batas Jarak Pengantaran Adalah 25 KM</p>
+          </li>
+          <li>
             <a class="item-link smart-select smart-select-init">
               <select name="pemilik_id" id="pemilik_id">
 
@@ -28,33 +31,24 @@
               </div>
             </a>
           </li>
-          <li>
-            <a class="item-link smart-select smart-select-init">
-              <select name="gerai_layanan_id" id="gerai_layanan_id">
+          <li id="gerai_layanan_id">
 
-              </select>
-              <div class="item-content">
-                <div class="item-inner">
-                  <div class="item-title">Pilih Layanan</div>
-                </div>
-              </div>
-            </a>
           </li>
           <li>
-          <div class="item-content item-input">
-            <div class="item-inner">
-              <div class="item-title item-label">Jumlah</div>
-              <div class="item-input-wrap">
-                <input type="number" name="qty">
+            <div class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Catatan</div>
+                <div class="item-input-wrap">
+                  <textarea name="catatan" rows="8" cols="80"></textarea>
+                </div>
               </div>
             </div>
-          </div>
-        </li>
+          </li>
         </ul>
       </form>
     </div>
     <div class="block block-strong row">
-      <div class="col"><a class="button button-fill convert-form-to-data" href="#">Order Sekarang</a></div>
+      <div class="col"><a class="button button-fill convert-form-to-data" href="#">Lanjutkan</a></div>
     </div>
   </div>
 </div>
@@ -74,7 +68,8 @@ export default {
         var carsSelect = $$("#pemilik_id");
         carsSelect.html("");
         fdata.forEach(function(el) {
-          carsSelect.append("<option value=" + el.id_pengguna + ">" + el.nama_pengguna + "</option>");
+          // carsSelect.append("<option value=" + el.id_pengguna + "><p>" + el.nama_pengguna + "<br>" + el.alamat + "</p></option>");
+          carsSelect.append("<option value=" + el.id_pengguna + "><p>" + el.nama_pengguna +"</p></option>");
         });
 
       }else {
@@ -84,6 +79,7 @@ export default {
   },
   on: {
     pageInit: function(e, page) {
+      // console.log(page);
       var $$ = this.$root.obj;
       var base_url = this.$root.url;
       var app = this.$app;
@@ -104,10 +100,50 @@ export default {
                 });
                 var carsSelect = $$("#gerai_layanan_id");
                 carsSelect.html("");
+                var tas = [];
+                var sepatu = [];
+                var helm = [];
+                var templateItem = function(data){
+                  return '<div class="list row"><div class="col-100"><label class="item-checkbox item-content"><input type="checkbox" name="gerai_layanan_id" value="'+data.id+'"/><i class="icon icon-checkbox"></i><div class="item-inner"><div class="item-title">'+data.nama+' - Rp.'+data.harga+'</div></div></label></div><div class="col" style="margin:5% 30%"><div class="stepper stepper-init"><div class="stepper-button-minus" data-id="'+data.id+'"></div><div class="stepper-input-wrap"><input type="text" id="qty_'+data.id+'" name="qty_'+data.id+'" value="0" min="0" max="100" step="1" readonly></div><div class="stepper-button-plus" data-id="'+data.id+'"></div></div></div></div>';
+                }
                 fdata.forEach(function(el) {
-                  carsSelect.append("<option value=" + el.id + ">" + el.nama + " - " +"Rp."+el.harga+ "</option>");
+                  if (el.jenis == "tas") {
+                    tas.push(templateItem(el));
+                  }else if (el.jenis == "sepatu") {
+                    sepatu.push(templateItem(el));
+                  }else if (el.jenis == "helm") {
+                    helm.push(templateItem(el));
+                  }
                 });
-
+                var helmEl = "";
+                var tasEl = "";
+                var sepatuEl = "";
+                if (helm.length > 0) {
+                  helmEl = '<div class="block-title">HELM</div>'+helm.join("");
+                }
+                if (tas.length > 0) {
+                  tasEl = '<div class="block-title">TAS</div>'+tas.join("");
+                }
+                if (sepatu.length > 0) {
+                  sepatuEl = '<div class="block-title">SEPATU</div>'+sepatu.join("");
+                }
+                carsSelect.append(tasEl+sepatuEl+helmEl);
+                $$(".stepper-button-minus").on("click",function(event) {
+                  var id = $$(this).data("id")
+                  console.log("Minus "+id);
+                  var val = parseInt($$("#qty_"+id).val());
+                  if (val != 0) {
+                    $$("#qty_"+id).val((val-1));
+                  }
+                  console.log(val);
+                })
+                $$(".stepper-button-plus").on("click",function(event) {
+                  var id = $$(this).data("id")
+                  console.log("Plus "+id);
+                  var val = parseInt($$("#qty_"+id).val());
+                  $$("#qty_"+id).val((val+1));
+                  console.log(val);
+                })
               }else {
                 this.onError();
               }
@@ -115,57 +151,105 @@ export default {
           }
         }
       });
-      $$('.convert-form-to-data').on('click', function(){
-        var formData = app.form.convertToData('#my-form');
-        formData.gerai_pelanggan_id = datasesi.id;
-        console.log(formData);
-        var urlBonds = function(add){
-          return "https://maps.googleapis.com/maps/api/geocode/json?address="+add+"&key=AIzaSyD1cM44pjtWnEej7CgCeCVtYx5D70ImTdQ";
-        };
-        app.request.get(urlBonds(datasesi.alamat),function(dr){
-          var res = dr.results;
-          var lat = res[0].geometry.location.lat;
-          var lng = res[0].geometry.location.lng;
-          app.request.get(base_url+"cekharga/"+formData.gerai_layanan_id,function(d){
-            app.dialog.confirm('Estimasi Pembayaran Rp. '+(parseFloat(formData.qty) * parseFloat(d)), function () {
-              app.request.post(base_url+"submitorder?cLat="+lat+"&cLng="+lng,formData,function(d){
-                if (d.status == 1) {
-                  var data = {
-                    title:"Sukses Order",
-                    subtitle:"Order Telah Dikirim",
-                    text:"Harap tunggu driver akan menjemput sepatumu"
-                  }
-                  var inst = app.notification.create({
-                    icon: '<i class="icon demo-icon">W</i>',
-                    title: data.title,
-                    titleRightText: 'now',
-                    subtitle: data.subtitle,
-                    text: data.text,
-                    closeOnClick: true,
-                  });
-                  inst.open();
-                  app.views.main.router.navigate("/pesanan/");
-                }else {
-                  var data = {
-                    title:"Perhatian",
-                    subtitle:"Error Di Temukan",
-                    text:"Harap Tunggu Sampai Orderan Sebelumnya Selesai"
-                  };
-                  var inst = app.notification.create({
-                    icon: '<i class="icon demo-icon">W</i>',
-                    title: data.title,
-                    titleRightText: 'now',
-                    subtitle: data.subtitle,
-                    text: data.text,
-                    closeOnClick: true,
-                  });
-                  inst.open();
 
-                }
-              },"json");
-            });
-          },"text")
-        },"json");
+      $$('.convert-form-to-data').on('click', function(e){
+         e.preventDefault();
+        var formData = app.form.convertToData('#my-form');
+        if (formData.pemilik_id != undefined) {
+          formData.gerai_pelanggan_id = datasesi.id;
+          sess.set("form_order",formData);
+          var d = sess.get("data");
+          console.log(formData);
+          var myForm = $$("#my-form");
+          var tempLate = [
+          "<p>Nama : "+d.nama+"</p>",
+          "<p>No HP : "+d.no_hp+"</p>",
+          '<div class="item-content item-input"><div class="item-inner"><div class="item-title item-label">Alamat Jemput</div><div class="item-input-wrap"><textarea name="alamat_jemput" id="alamat_jemput" rows="8" cols="80">'+d.alamat+'</textarea></div></div></div><input style="display:none" id="lat" name="lat" /><input style="display:none" id="lng" name="lng" /><div id="mapid_layanan" style="width:auto;height:200px"></div>'
+          ];
+          myForm.html(tempLate.join(""));
+          var map = L.map('mapid_layanan').setView([51.505, -0.09], 13);
+          L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+              attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+              maxZoom: 18,
+              id: 'mapbox/streets-v11',
+              accessToken: 'pk.eyJ1IjoiaWd1bjk5NyIsImEiOiJjazRkNGU2MGEwdHB4M2xwYTU0YWpsd2V4In0.DsoDIY5kzULdad_WuJVyRg'
+          }).addTo(map);
+          map.locate({setView: true, maxZoom: 16});
+          function onLocationFound(e) {
+              var radius = e.accuracy;
+              var marker = L.marker(e.latlng,{
+                draggable: true
+              }).addTo(map)
+                  .bindPopup("Lokasi Anda Akurat " + radius + " meter dari titik").openPopup();
+              L.circle(e.latlng, radius).addTo(map);
+              var coord = e.latlng;
+              var lat = coord.lat;
+              var lng = coord.lng;
+              myForm.find("#lat").val(lat);
+              myForm.find("#lng").val(lng);
+
+              marker.on('dragend', function (e) {
+                var lat =  marker.getLatLng().lat;
+                var lng = marker.getLatLng().lng;
+                myForm.find("#lat").val(lat);
+                myForm.find("#lng").val(lng);
+              });
+          }
+          map.on('locationfound', onLocationFound);
+          function onLocationError(e) {
+              alert(e.message);
+          }
+
+          map.on('locationerror', onLocationError);
+        }else {
+            var tempdata = sess.get("form_order");
+            tempdata.alamat_jemput = formData.alamat_jemput;
+            tempdata.lat = formData.lat;
+            tempdata.lng = formData.lng;
+            var formData = tempdata;
+            var lat = tempdata.lat;
+            var lng = tempdata.lng;
+            app.request.post(base_url+"cekharga",{layanan:formData.gerai_layanan_id,rawData:formData},function(d){
+              app.dialog.confirm('Estimasi Pembayaran Rp. '+d, function () {
+                app.request.post(base_url+"submitorder?cLat="+lat+"&cLng="+lng+"&totalharga="+d,formData,function(d){
+                  if (d.status == 1) {
+                    var data = {
+                      title:"Sukses Order",
+                      subtitle:"Order Telah Dikirim",
+                      text:"Harap tunggu driver akan menjemput sepatumu"
+                    }
+                    var inst = app.notification.create({
+                      icon: '<i class="icon demo-icon">W</i>',
+                      title: data.title,
+                      titleRightText: 'now',
+                      subtitle: data.subtitle,
+                      text: data.text,
+                      closeOnClick: true,
+                    });
+                    inst.open();
+                    app.views.main.router.navigate("/pesanan/");
+                  }else {
+                    var data = {
+                      title:"Perhatian",
+                      subtitle:"Error Di Temukan",
+                      text:d.msg
+                    };
+                    var inst = app.notification.create({
+                      icon: '<i class="icon demo-icon">W</i>',
+                      title: data.title,
+                      titleRightText: 'now',
+                      subtitle: data.subtitle,
+                      text: data.text,
+                      closeOnClick: true,
+                    });
+                    inst.open();
+
+                  }
+                },"json");
+              });
+            },"text")
+        }
+
       });
     }
   },methods: {

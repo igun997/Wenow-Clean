@@ -39,9 +39,65 @@
             <label class="flex-shrink-0"><b>No Order</b></label>
             <p>#{{pesanan.id_formatted}}</p>
           </div>
+        </div>
+        <div class="row">
           <div class="col">
             <label class="flex-shrink-0"><b>Item Dipesan</b></label>
-            <p>{{pesanan.gerai_layanan.nama}} x{{pesanan.qty}}</p>
+            {{#each pesanan.gerai_order_details}}
+            <p>{{gerai_layanan.nama}} x{{qty}}</p>
+            {{/each}}
+          </div>
+          <div class="col">
+            <label class="flex-shrink-0"><b>Harga Layanan</b></label>
+            <p>Rp. {{total}}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-100">
+            <center>
+              <div class="block-title" style="padding:2px 2px 2px">Rincian Gerai</div>
+            </center>
+          </div>
+          <div class="col">
+            <label class="flex-shrink-0"><b>Nama Gerai</b></label>
+            <p>{{pesanan.pengguna.nama_pengguna}}</p>
+          </div>
+          <div class="col">
+            <label class="flex-shrink-0"><b>Alamat Gerai</b></label>
+            <p>{{pesanan.pengguna.alamat}}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label class="flex-shrink-0"><b>Kontak Gerai</b></label>
+            <p>{{pesanan.pengguna.no_kontak}}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-100">
+            <center>
+              <div class="block-title" style="padding:2px 2px 2px">Riwayat Progress</div>
+            </center>
+          </div>
+          <div class="col">
+            <div class="data-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each riwayat}}
+                  <tr>
+                    <td>{{tgl}}</td>
+                    <td>{{status}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <div class="row">
@@ -50,6 +106,12 @@
             <center>
               <div class="block-title" style="padding:2px 2px 2px">Opsi Pengantaran</div>
             </center>
+          </div>
+          <div class="col-100 list">
+            <div class="item-content item-input"><div class="item-inner"><div class="item-title item-label">Alamat Pengantaran</div><div class="item-input-wrap"><textarea id="alamat_antar" rows="8" cols="80">{{pesanan.alamat_jemput}}</textarea></div></div></div>
+            <input type="text" name="lat" id="lat" style="display:none">
+            <input type="text" name="lng" id="lng" style="display:none">
+            <div id="mapid_detail" style="width:auto;height:200px"></div>
           </div>
             <div class="col">
                <button class="col button button-large button-fill koreksi" data-id="1" data-primary="{{pesanan.id}}">Diantar Kurir</button>
@@ -62,17 +124,44 @@
         <div class="row">
 
           {{#if pesanan.gerai_driver_id }}
+            <div class="col-100">
+              <center>
+                <div class="block-title" style="padding:2px 2px 2px">Penjemputan Oleh</div>
+              </center>
+            </div>
             <div class="col">
               <label class="flex-shrink-0"><b>Nama Pengemudi</b></label>
-              <p>{{pesanan.gerai_driver.nama}}</p>
+              <p>{{pesanan.gerai_driver_jemput.nama}}</p>
             </div>
             <div class="col">
               <label class="flex-shrink-0"><b>Total Tempuh</b></label>
               <p>{{pesanan.jarak}} KM</p>
             </div>
             <div class="col">
-              <label class="flex-shrink-0"><b>Total Harga</b></label>
-              <p>Rp. {{total}}</p>
+              <label class="flex-shrink-0"><b>Ongkir</b></label>
+              <p>Rp. {{pesanan.ongkir_jemput}}</p>
+            </div>
+          {{/if}}
+        </div>
+        <div class="row">
+
+          {{#if pesanan.gerai_driver_id_antar }}
+            <div class="col-100">
+              <center>
+                <div class="block-title" style="padding:2px 2px 2px">Pengantaran Oleh</div>
+              </center>
+            </div>
+            <div class="col">
+              <label class="flex-shrink-0"><b>Nama Pengemudi</b></label>
+              <p>{{pesanan.gerai_driver_antar.nama}}</p>
+            </div>
+            <div class="col">
+              <label class="flex-shrink-0"><b>Total Tempuh</b></label>
+              <p>{{pesanan.jarak_antar}} KM</p>
+            </div>
+            <div class="col">
+              <label class="flex-shrink-0"><b>Ongkir</b></label>
+              <p>Rp. {{pesanan.ongkir_antar}}</p>
             </div>
           {{/if}}
         </div>
@@ -99,11 +188,13 @@
       if(selected.status_order == 4){
         s = true;
       }
+      console.log(selected.progress);
       return {
         pesanan:selected,
+        riwayat:selected.progress,
         persentator:((selected.status_order*100)/6).toFixed(),
         persentator_comma:(selected.status_order/6),
-        total:(selected.qty*selected.gerai_layanan.harga)+(selected.jarak*5000),
+        total:selected.totalharga,
         dec:s
       };
     },
@@ -118,6 +209,39 @@
         console.log(sess.get('data'));
         console.log("AfterIN Control");
         console.log(url);
+        var map = L.map('mapid_detail').setView([51.505, -0.09], 13);
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            accessToken: 'pk.eyJ1IjoiaWd1bjk5NyIsImEiOiJjazRkNGU2MGEwdHB4M2xwYTU0YWpsd2V4In0.DsoDIY5kzULdad_WuJVyRg'
+        }).addTo(map);
+        map.locate({setView: true, maxZoom: 16});
+        function onLocationFound(e) {
+            var radius = e.accuracy;
+            var marker = L.marker(e.latlng,{
+              draggable: true
+            }).addTo(map)
+                .bindPopup("Lokasi Anda Akurat " + radius + " meter dari titik").openPopup();
+            L.circle(e.latlng, radius).addTo(map);
+            var coord = e.latlng;
+            var lat = coord.lat;
+            var lng = coord.lng;
+            $$("#lat").val(lat);
+            $$("#lng").val(lng);
+            marker.on('dragend', function (e) {
+              var lat =  marker.getLatLng().lat;
+              var lng = marker.getLatLng().lng;
+              $$("#lat").val(lat);
+              $$("#lng").val(lng);
+            });
+        }
+        map.on('locationfound', onLocationFound);
+        function onLocationError(e) {
+            alert(e.message);
+        }
+
+        map.on('locationerror', onLocationError);
         $$(".koreksi").on("click", function(event) {
           var status = $$(this).data("id");
           var id = $$(this).data("primary");
@@ -125,16 +249,11 @@
           console.log(id);
           console.log("Klik");
           console.log("Lokasi");
-          var urlBonds = function(add){
-            return "https://maps.googleapis.com/maps/api/geocode/json?address="+add+"&key=AIzaSyD1cM44pjtWnEej7CgCeCVtYx5D70ImTdQ";
-          };
           if (status == 1) {
-            var getLatLng = urlBonds(datasesi.alamat);
-            app.request.get(getLatLng,function(ds,s,x){
-              var res = ds.results;
-              var lat = res[0].geometry.location.lat
-              var lng = res[0].geometry.location.lng
-              app.request.get(url+"dijemput/"+status+"/"+id+"?lat="+lat+"&lng="+lng,function(d){
+              var alamat = $$("#alamat_antar").val();
+              var lat = $$("#lat").val();
+              var lng = $$("#lng").val();
+              app.request.get(url+"dijemput/"+status+"/"+id+"?lat="+lat+"&lng="+lng+"&alamat_antar="+alamat,function(d){
                 if (d.status == 1) {
                   var data = {
                     title:"Perhatian",
@@ -169,9 +288,7 @@
 
                 }
               },"json");
-            },"json");
           }else {
-
             app.request.get(url+"dijemput/"+status+"/"+id,function(d){
               if (d.status == 1) {
                 var data = {

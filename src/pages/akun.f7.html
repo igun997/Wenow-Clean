@@ -1,0 +1,134 @@
+<template>
+<div class="page" data-name="akun">
+  <div class="navbar">
+    <div class="navbar-bg"></div>
+    <div class="navbar-inner sliding">
+      <div class="title">Pengaturan Akun</div>
+    </div>
+  </div>
+  <div class="page-content">
+    <form class="list" id="formAkun">
+  <ul>
+    <li>
+      <div class="item-content item-input">
+        <div class="item-inner">
+          <div class="item-title item-label">Nama</div>
+          <div class="item-input-wrap">
+            <input type="text" name="nama" placeholder="Nama Kamu" value="{{data.nama}}">
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="item-content item-input">
+        <div class="item-inner">
+          <div class="item-title item-label">E-mail</div>
+          <div class="item-input-wrap">
+            <input type="email" name="email" placeholder="E-mail" value="{{data.email}}">
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="item-content item-input">
+        <div class="item-inner">
+          <div class="item-title item-label">Jenis Kelamin</div>
+          <div class="item-input-wrap">
+            <select name="jk">
+              {{#if male}}
+              <option value="0" selected>Laki Laki</option>
+              <option value="1">Perempuan</option>
+              {{/if}}
+              {{#if female}}
+              <option value="0" >Laki Laki</option>
+              <option value="1" selected>Perempuan</option>
+              {{/if}}
+            </select>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="item-content item-input">
+        <div class="item-inner">
+          <div class="item-title item-label">No HP</div>
+          <div class="item-input-wrap">
+            <input type="number" name="no_hp" placeholder="No HP" value="{{data.no_hp}}">
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="item-content item-input">
+        <div class="item-inner">
+          <div class="item-title item-label">Alamat</div>
+          <div class="item-input-wrap">
+            <textarea rows="8" cols="80" name="alamat">{{data.alamat}}</textarea>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+  <div class="block block-strong row">
+    <div class="col">
+      <button type="submit"  class="button button-fill" id="updateData">Update Data</button>
+    </div>
+  </div>
+</form>
+  </div>
+</div>
+</template>
+<script>
+export default {
+  data : function(){
+    var rowData = (this.akun);
+    return {
+      data:rowData,
+      male:((rowData.jk == 0)?true:false),
+      female:((rowData.jk == 1)?true:false),
+    }
+  },
+  on: {
+    pageInit: function(e, page) {
+      // console.log(page);
+      var $$ = this.$root.obj;
+      var base_url = this.$root.url;
+      var app = this.$app;
+      console.log(app);
+      var sess = this.$root.session;
+      var datasesi = sess.get("data");
+      $$('#formAkun').on('submit', function(e){
+         e.preventDefault();
+        var formData = app.form.convertToData('#formAkun');
+        console.log(formData);
+        app.request.post(base_url+"updateakun/"+datasesi.id,formData,function(d){
+          console.log(d);
+          if (d.status == 1) {
+            var data = {
+              title:"Peringatan",
+              subtitle:"Update Data Sukes",
+              text:"Data Telah Di Ubah"
+            };
+            app.methods.notifikasi(data).open();
+            var lat = datasesi.lat;
+            var lng = datasesi.lng;
+            formData.lat = lat;
+            formData.lng = lng;
+            sess.set("data",formData);
+          }else {
+            var data = {
+              title:"Peringatan",
+              subtitle:"Update Data Gagal",
+              text:"Harap Perhatikan Formulir Pengisian"
+            };
+            app.methods.notifikasi(data).open();
+          }
+        },function(){
+          console.log("Terputus Dari Server");
+        },"json");
+
+      });
+    }
+  }
+};
+</script>
