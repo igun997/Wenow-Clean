@@ -20,8 +20,8 @@ var storageSession = store.createInstance({
   name: "session"
 });
 
-// var base_url = "http://wenow.id/api/android/";
-var base_url = "http://127.0.0.1/scm/public/api/android/";
+var base_url = "http://wenow.id/api/android/";
+// var base_url = "http://192.168.43.104/scm/public/api/android/";
 console.log(storageSession);
 var app = new Framework7({
   root: '#app', // App root element
@@ -171,9 +171,12 @@ $$('#my-login-screen .register-button').on('click', function () {
       accessToken: 'pk.eyJ1IjoiaWd1bjk5NyIsImEiOiJjazRkNGU2MGEwdHB4M2xwYTU0YWpsd2V4In0.DsoDIY5kzULdad_WuJVyRg'
   }).addTo(map);
   map.locate({setView: true, maxZoom: 16});
+  var mark = null;
   function onLocationFound(e) {
       var radius = e.accuracy;
-      L.marker(e.latlng).addTo(map)
+      var mark = L.marker(e.latlng,{
+          draggable: true
+      }).addTo(map)
           .bindPopup("Lokasi Anda Akurat " + radius + " meter dari titik").openPopup();
       L.circle(e.latlng, radius).addTo(map);
       var coord = e.latlng;
@@ -181,8 +184,17 @@ $$('#my-login-screen .register-button').on('click', function () {
       var lng = coord.lng;
       $$('#my-register-screen [name="lat"]').val(lat);
       $$('#my-register-screen [name="lng"]').val(lng);
+      mark.on('dragend', function (e) {
+        var lat =  mark.getLatLng().lat;
+        var lng = mark.getLatLng().lng;
+        $$('#my-register-screen [name="lat"]').val(lat);
+        $$('#my-register-screen [name="lng"]').val(lng);
+      });
   }
   map.on('locationfound', onLocationFound);
+  // if (mark =! null) {
+  //
+  // }
   function onLocationError(e) {
       alert(e.message);
   }

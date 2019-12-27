@@ -189,9 +189,16 @@
         s = true;
       }
       console.log(selected.progress);
+      var progress = [];
+      if (selected.progress[0] == undefined) {
+        progress[0]  = selected.progress;
+      }else {
+        progress = selected.progress;
+      }
+      console.log(progress);
       return {
         pesanan:selected,
-        riwayat:selected.progress,
+        riwayat:progress,
         persentator:((selected.status_order*100)/6).toFixed(),
         persentator_comma:(selected.status_order/6),
         total:selected.totalharga,

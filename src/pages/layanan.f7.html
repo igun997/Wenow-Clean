@@ -17,7 +17,7 @@
       <form class="list" id="my-form">
         <ul>
           <li>
-            <p style='color:red'>* Batas Jarak Pengantaran Adalah 25 KM</p>
+            <p style='color:red'>* Batas Jarak Pengantaran Adalah 25 KM,  Ongkir Rp 5.000 / KM</p>
           </li>
           <li>
             <a class="item-link smart-select smart-select-init">
@@ -166,6 +166,7 @@ export default {
           "<p>No HP : "+d.no_hp+"</p>",
           '<div class="item-content item-input"><div class="item-inner"><div class="item-title item-label">Alamat Jemput</div><div class="item-input-wrap"><textarea name="alamat_jemput" id="alamat_jemput" rows="8" cols="80">'+d.alamat+'</textarea></div></div></div><input style="display:none" id="lat" name="lat" /><input style="display:none" id="lng" name="lng" /><div id="mapid_layanan" style="width:auto;height:200px"></div>'
           ];
+          $$(this).html("Pesan Sekarang");
           myForm.html(tempLate.join(""));
           var map = L.map('mapid_layanan').setView([51.505, -0.09], 13);
           L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
