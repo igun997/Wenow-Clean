@@ -17,12 +17,13 @@
       <form class="list" id="my-form">
         <ul>
           <li>
-            <p style='color:red'>* Batas Jarak Pengantaran Adalah 25 KM,  Ongkir Rp 5.000 / KM</p>
+            <p style='color:red'>*Batas Jarak Layanan Antar/Jemput adalah 25 KM</p>
+            <p style='color:red'>*Biaya Layanan Antar/Jemput Rp 2.500 / KM</p>
+            <p style='color:red'>*Pencucian semua layanan di lakukan dalam waktu minimal 3 hari</p>
           </li>
           <li>
             <a class="item-link smart-select smart-select-init">
               <select name="pemilik_id" id="pemilik_id">
-
               </select>
               <div class="item-content">
                 <div class="item-inner">
@@ -32,7 +33,6 @@
             </a>
           </li>
           <li id="gerai_layanan_id">
-
           </li>
           <li>
             <div class="item-content item-input">
@@ -103,6 +103,9 @@ export default {
                 var tas = [];
                 var sepatu = [];
                 var helm = [];
+                var dompet = [];
+                var sabuk = [];
+                var topi = [];
                 var templateItem = function(data){
                   return '<div class="list row"><div class="col-100"><label class="item-checkbox item-content"><input type="checkbox" name="gerai_layanan_id" value="'+data.id+'"/><i class="icon icon-checkbox"></i><div class="item-inner"><div class="item-title">'+data.nama+' - Rp.'+data.harga+'</div></div></label></div><div class="col" style="margin:5% 30%"><div class="stepper stepper-init"><div class="stepper-button-minus" data-id="'+data.id+'"></div><div class="stepper-input-wrap"><input type="text" id="qty_'+data.id+'" name="qty_'+data.id+'" value="0" min="0" max="100" step="1" readonly></div><div class="stepper-button-plus" data-id="'+data.id+'"></div></div></div></div>';
                 }
@@ -113,11 +116,20 @@ export default {
                     sepatu.push(templateItem(el));
                   }else if (el.jenis == "helm") {
                     helm.push(templateItem(el));
+                  }else if (el.jenis == "sabuk") {
+                    sabuk.push(templateItem(el));
+                  }else if (el.jenis == "topi") {
+                    topi.push(templateItem(el));
+                  }else if (el.jenis == "dompet") {
+                    dompet.push(templateItem(el));
                   }
                 });
                 var helmEl = "";
                 var tasEl = "";
                 var sepatuEl = "";
+                var sabukEl = "";
+                var topiEl = "";
+                var dompetEl = "";
                 if (helm.length > 0) {
                   helmEl = '<div class="block-title">HELM</div>'+helm.join("");
                 }
@@ -127,7 +139,17 @@ export default {
                 if (sepatu.length > 0) {
                   sepatuEl = '<div class="block-title">SEPATU</div>'+sepatu.join("");
                 }
-                carsSelect.append(tasEl+sepatuEl+helmEl);
+
+                if (sabuk.length > 0) {
+                  sabukEl = '<div class="block-title">SABUK</div>'+sabuk.join("");
+                }
+                if (sepatu.length > 0) {
+                  topiEl = '<div class="block-title">TOPI</div>'+topi.join("");
+                }
+                if (sepatu.length > 0) {
+                  dompetEl = '<div class="block-title">DOMPET</div>'+dompet.join("");
+                }
+                carsSelect.append(tasEl+sepatuEl+helmEl+sabukEl+topiEl+dompetEl);
                 $$(".stepper-button-minus").on("click",function(event) {
                   var id = $$(this).data("id")
                   console.log("Minus "+id);

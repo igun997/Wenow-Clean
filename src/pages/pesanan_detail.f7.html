@@ -44,7 +44,7 @@
           <div class="col">
             <label class="flex-shrink-0"><b>Item Dipesan</b></label>
             {{#each pesanan.gerai_order_details}}
-            <p>{{gerai_layanan.nama}} x{{qty}}</p>
+            <p>[{{gerai_layanan.jenis}}] {{gerai_layanan.nama}} x{{qty}}</p>
             {{/each}}
           </div>
           <div class="col">
@@ -117,7 +117,7 @@
                <button class="col button button-large button-fill koreksi" data-id="1" data-primary="{{pesanan.id}}">Diantar Kurir</button>
             </div>
             <div class="col">
-               <button class="col button button-large button-fill koreksi" data-id="0" data-primary="{{pesanan.id}}">Jemput Sendiri</button>
+               <button class="col button button-large button-fill koreksi" data-id="0" data-primary="{{pesanan.id}}">Ambil Sendiri</button>
             </div>
           {{/if}}
         </div>
@@ -138,7 +138,7 @@
               <p>{{pesanan.jarak}} KM</p>
             </div>
             <div class="col">
-              <label class="flex-shrink-0"><b>Ongkir</b></label>
+              <label class="flex-shrink-0"><b>Biaya</b></label>
               <p>Rp. {{pesanan.ongkir_jemput}}</p>
             </div>
           {{/if}}
@@ -160,7 +160,7 @@
               <p>{{pesanan.jarak_antar}} KM</p>
             </div>
             <div class="col">
-              <label class="flex-shrink-0"><b>Ongkir</b></label>
+              <label class="flex-shrink-0"><b>Biaya</b></label>
               <p>Rp. {{pesanan.ongkir_antar}}</p>
             </div>
           {{/if}}
@@ -177,6 +177,7 @@
       var rowData = JSON.parse(this.pesanan);
       console.log(rowData);
       var id = this.$route.params.id;
+      console.log("Params");
       var selected;
       rowData.data.forEach(function(e){
         if (e.id == id) {
@@ -184,6 +185,7 @@
           return false;
         }
       });
+      console.log(selected);
       var s = false;
       if(selected.status_order == 4){
         s = true;
